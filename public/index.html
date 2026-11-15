@@ -53,6 +53,12 @@
               <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
             </svg>
           </button>
+          <!-- Clear / Delete Chat Screen Button -->
+          <button id="clear-chat-btn" class="icon-btn" title="Delete Chat from Screen">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+            </svg>
+          </button>
           <!-- User Profile / Logout Button -->
           <button id="logout-btn" class="icon-btn" title="Log Out">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
@@ -283,6 +289,31 @@
       <div class="permission-actions">
         <button id="permission-cancel-btn" class="btn btn-secondary">Cancel</button>
         <button id="permission-allow-btn" class="btn btn-primary">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clear Chat from Screen Confirmation Modal -->
+  <div id="clear-chat-modal" class="confirm-modal hidden">
+    <div class="confirm-card">
+      <div class="confirm-icon-wrap danger-icon">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="#ea4335">
+          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+        </svg>
+      </div>
+      <h3>Clear Chat from Screen?</h3>
+      <p>
+        This will delete messages and photos from your screen.
+      </p>
+      <div class="safe-backup-notice">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="#00a884">
+          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
+        </svg>
+        <span>All messages & photos remain 100% saved in the secure backend database.</span>
+      </div>
+      <div class="confirm-actions">
+        <button id="btn-cancel-clear" class="btn btn-secondary">Cancel</button>
+        <button id="btn-confirm-clear" class="btn btn-danger-solid">Clear Screen</button>
       </div>
     </div>
   </div>

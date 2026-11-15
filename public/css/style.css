@@ -97,6 +97,16 @@ html, body {
   background-color: rgba(255, 255, 255, 0.18);
 }
 
+.btn-danger-solid {
+  background-color: var(--accent-danger);
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn-danger-solid:hover {
+  background-color: #d93025;
+}
+
 /* ==========================================================================
    Login Screen
    ========================================================================== */
@@ -1003,6 +1013,115 @@ html, body {
 .permission-actions button {
   flex: 1;
   padding: 12px;
+}
+
+/* ==========================================================================
+   Clear Chat Confirmation Modal
+   ========================================================================== */
+.confirm-modal {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  z-index: 450;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(8px);
+}
+
+.confirm-card {
+  background: var(--bg-panel);
+  border-radius: 18px;
+  padding: 30px 24px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+  border: 1px solid var(--border-light);
+  animation: fadeIn 0.18s ease-out;
+}
+
+.confirm-icon-wrap {
+  width: 66px;
+  height: 66px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: rgba(234, 67, 53, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-card h3 {
+  font-size: 19px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.confirm-card p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.4;
+  margin-bottom: 18px;
+}
+
+.safe-backup-notice {
+  background: rgba(0, 168, 132, 0.1);
+  border: 1px solid rgba(0, 168, 132, 0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--accent-green-bright);
+  text-align: left;
+  margin-bottom: 22px;
+  line-height: 1.35;
+}
+
+.confirm-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.confirm-actions button {
+  flex: 1;
+  padding: 12px;
+}
+
+/* History Cleared Banner in Chat Stream */
+.history-cleared-banner {
+  align-self: center;
+  background-color: #182229;
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  margin: 12px auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  user-select: none;
+}
+
+.restore-link {
+  color: var(--accent-green-bright);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0;
+}
+
+.restore-link:hover {
+  color: #fff;
 }
 
 /* ==========================================================================

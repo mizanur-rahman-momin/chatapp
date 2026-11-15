@@ -29,6 +29,12 @@ class ChatManager {
     this.lightboxClose = document.getElementById('lightbox-close');
     this.lightboxDownload = document.getElementById('lightbox-download');
 
+    // Clear Chat Elements
+    this.clearChatBtn = document.getElementById('clear-chat-btn');
+    this.clearChatModal = document.getElementById('clear-chat-modal');
+    this.btnCancelClear = document.getElementById('btn-cancel-clear');
+    this.btnConfirmClear = document.getElementById('btn-confirm-clear');
+
     this.initUIEvents();
     this.initSocketEvents();
     this.loadChatHistory();
@@ -54,6 +60,17 @@ class ChatManager {
       this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 120) + 'px';
       this.notifyTyping();
     });
+
+    // Clear chat modal events
+    if (this.clearChatBtn) {
+      this.clearChatBtn.addEventListener('click', () => this.showClearChatModal());
+    }
+    if (this.btnCancelClear) {
+      this.btnCancelClear.addEventListener('click', () => this.hideClearChatModal());
+    }
+    if (this.btnConfirmClear) {
+      this.btnConfirmClear.addEventListener('click', () => this.clearChatFromScreen());
+    }
 
     // Attachment button click
     this.attachBtn.addEventListener('click', () => {
@@ -166,15 +183,67 @@ class ChatManager {
     } catch (e) {}
   }
 
+  // Clear chat screen management (preserves backend database backup)
+  getClearedStorageKey() {
+    return `chatapp_cleared_at_user_${this.user.id}`;
+  }
+
+  showClearChatModal() {
+    if (this.clearChatModal) {
+      this.clearChatModal.classList.remove('hidden');
+    }
+  }
+
+  hideClearChatModal() {
+    if (this.clearChatModal) {
+      this.clearChatModal.classList.add('hidden');
+    }
+  }
+
+  clearChatFromScreen() {
+    localStorage.setItem(this.getClearedStorageKey(), new Date().toISOString());
+    this.hideClearChatModal();
+    this.messagesContainer.innerHTML = '';
+    this.lastRenderedDate = null;
+    this.renderClearedBanner();
+  }
+
+  restoreChatHistory() {
+    localStorage.removeItem(this.getClearedStorageKey());
+    this.loadChatHistory();
+  }
+
+  renderClearedBanner() {
+    const banner = document.createElement('div');
+    banner.className = 'history-cleared-banner';
+    banner.innerHTML = `
+      <span>Chat cleared from this screen (backed up on server)</span>
+      <button class="restore-link" type="button">Restore History</button>
+    `;
+    const btn = banner.querySelector('.restore-link');
+    btn.addEventListener('click', () => this.restoreChatHistory());
+    this.messagesContainer.appendChild(banner);
+  }
+
   // Load message history from REST API
   async loadChatHistory() {
     try {
-      const res = await fetch('/api/messages?limit=150');
+      const res = await fetch('/api/messages?limit=250');
       if (res.ok) {
         const data = await res.json();
         this.messagesContainer.innerHTML = '';
         this.lastRenderedDate = null;
-        data.messages.forEach(msg => this.appendMessage(msg));
+
+        const clearedAtStr = localStorage.getItem(this.getClearedStorageKey());
+        let messagesToRender = data.messages || [];
+
+        if (clearedAtStr) {
+          const clearedTime = new Date(clearedAtStr).getTime();
+          messagesToRender = messagesToRender.filter(msg => new Date(msg.created_at).getTime() > clearedTime);
+          this.renderClearedBanner();
+        }
+
+        messagesToRender.forEach(msg => this.appendMessage(msg));
         this.scrollToBottom();
 
         // Mark any unread messages from partner as read
