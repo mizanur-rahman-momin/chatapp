@@ -205,24 +205,6 @@ class ChatManager {
     this.hideClearChatModal();
     this.messagesContainer.innerHTML = '';
     this.lastRenderedDate = null;
-    this.renderClearedBanner();
-  }
-
-  restoreChatHistory() {
-    localStorage.removeItem(this.getClearedStorageKey());
-    this.loadChatHistory();
-  }
-
-  renderClearedBanner() {
-    const banner = document.createElement('div');
-    banner.className = 'history-cleared-banner';
-    banner.innerHTML = `
-      <span>Chat cleared from this screen (backed up on server)</span>
-      <button class="restore-link" type="button">Restore History</button>
-    `;
-    const btn = banner.querySelector('.restore-link');
-    btn.addEventListener('click', () => this.restoreChatHistory());
-    this.messagesContainer.appendChild(banner);
   }
 
   // Load message history from REST API
@@ -240,7 +222,6 @@ class ChatManager {
         if (clearedAtStr) {
           const clearedTime = new Date(clearedAtStr).getTime();
           messagesToRender = messagesToRender.filter(msg => new Date(msg.created_at).getTime() > clearedTime);
-          this.renderClearedBanner();
         }
 
         messagesToRender.forEach(msg => this.appendMessage(msg));
