@@ -33,12 +33,12 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Multer storage configuration
+// Multer storage configuration (Cryptographically random filenames)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadsDir),
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
-    const rand = crypto.randomBytes(8).toString('hex');
+    const rand = crypto.randomBytes(16).toString('hex');
     cb(null, `${Date.now()}-${rand}${ext}`);
   }
 });
@@ -67,7 +67,6 @@ const io = new Server(server, {
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(uploadsDir));
 
 // Authentication Helpers
 function signToken(userId) {
@@ -102,6 +101,17 @@ function authMiddleware(req, res, next) {
   req.user = USERS[decoded.userId];
   next();
 }
+
+// Secure Photos & Images endpoint (Requires active login)
+app.get('/uploads/:filename', authMiddleware, (req, res) => {
+  const filename = path.basename(req.params.filename);
+  const filePath = path.join(uploadsDir, filename);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send('File not found');
+  }
+  res.setHeader('Cache-Control', 'private, no-transform, max-age=86400');
+  res.sendFile(filePath);
+});
 
 // REST Endpoints
 app.post('/api/login', (req, res) => {
