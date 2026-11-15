@@ -1,0 +1,11 @@
+# Replace chat.yourdomain.com with your actual domain or subdomain
+chat.yourdomain.com {
+    # Reverse proxy all traffic including WebSockets to the Node.js app
+    reverse_proxy 127.0.0.1:3000
+
+    # Optional: Enable gzip/zstd compression
+    encode zstd gzip
+
+    # Automatic Let's Encrypt SSL certificate is handled automatically by Caddy!
+}
+
