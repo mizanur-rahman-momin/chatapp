@@ -1,19 +1,10 @@
 /* ==========================================================================
-   Media Permissions & Camera Snapshot Helper Module
+   Camera Snapshot Helper Module (Direct Native Access)
    ========================================================================== */
 
 const MediaHelper = {
   activeStream: null,
   capturedBlob: null,
-
-  // DOM Elements - Permission Modal
-  modal: null,
-  titleEl: null,
-  descEl: null,
-  guideEl: null,
-  allowBtn: null,
-  cancelBtn: null,
-  iconWrap: null,
 
   // DOM Elements - Camera Snapshot Modal
   cameraModal: null,
@@ -30,19 +21,10 @@ const MediaHelper = {
   captureControls: null,
   previewControls: null,
 
-  currentFacingMode: 'user', // 'user' (laptop webcam / selfie) or 'environment'
+  currentFacingMode: 'user', // 'user' (webcam/selfie) or 'environment'
 
   init(chatManager) {
     this.chatManager = chatManager;
-
-    // Permissions Modal
-    this.modal = document.getElementById('permission-modal');
-    this.titleEl = document.getElementById('permission-title');
-    this.descEl = document.getElementById('permission-description');
-    this.guideEl = document.getElementById('permission-guide');
-    this.allowBtn = document.getElementById('permission-allow-btn');
-    this.cancelBtn = document.getElementById('permission-cancel-btn');
-    this.iconWrap = document.getElementById('permission-icon-wrap');
 
     // Camera Snapshot Modal
     this.cameraModal = document.getElementById('camera-modal');
@@ -63,101 +45,28 @@ const MediaHelper = {
   },
 
   bindEvents() {
-    // Open camera button in footer
     if (this.cameraBtn) {
       this.cameraBtn.addEventListener('click', () => this.openCamera());
     }
-
-    // Close camera snapshot modal
     if (this.cameraCloseBtn) {
       this.cameraCloseBtn.addEventListener('click', () => this.closeCamera());
     }
-
-    // Snap photo
     if (this.btnSnapPhoto) {
       this.btnSnapPhoto.addEventListener('click', () => this.takeSnapshot());
     }
-
-    // Retake photo
     if (this.btnRetakePhoto) {
       this.btnRetakePhoto.addEventListener('click', () => this.retakeSnapshot());
     }
-
-    // Send captured photo
     if (this.btnSendPhoto) {
       this.btnSendPhoto.addEventListener('click', () => this.sendSnapshot());
     }
-
-    // Switch camera (if multiple cameras available)
     if (this.cameraSwitchBtn) {
       this.cameraSwitchBtn.addEventListener('click', () => this.switchCameraFacing());
     }
   },
 
   /* ------------------------------------------------------------------------
-     Unified Permission Request Popup
-     ------------------------------------------------------------------------ */
-  requestMedia({ audio = false, video = true, title, description }) {
-    return new Promise((resolve) => {
-      // First, try directly in case permissions were already granted by browser
-      navigator.mediaDevices.getUserMedia({ audio, video })
-        .then(stream => {
-          resolve(stream);
-        })
-        .catch(err => {
-          // If denied, prompt blocked, or user interaction required, display friendly popup
-          this.showPermissionPopup({
-            audio,
-            video,
-            title: title || (audio && video ? 'Camera & Microphone Access' : 'Camera Access'),
-            description: description || 'ChatApp needs camera access to continue.',
-            error: err,
-            onSuccess: (stream) => resolve(stream),
-            onCancel: () => resolve(null)
-          });
-        });
-    });
-  },
-
-  showPermissionPopup({ audio, video, title, description, error, onSuccess, onCancel }) {
-    this.titleEl.textContent = title;
-    this.descEl.textContent = description;
-    this.modal.classList.remove('hidden');
-
-    if (error && (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError')) {
-      this.guideEl.classList.remove('hidden');
-      this.allowBtn.textContent = 'Try Again';
-    } else {
-      this.guideEl.classList.add('hidden');
-      this.allowBtn.textContent = 'Allow Access';
-    }
-
-    const cleanup = () => {
-      this.modal.classList.add('hidden');
-      this.allowBtn.onclick = null;
-      this.cancelBtn.onclick = null;
-    };
-
-    this.cancelBtn.onclick = () => {
-      cleanup();
-      if (onCancel) onCancel();
-    };
-
-    this.allowBtn.onclick = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio, video });
-        cleanup();
-        if (onSuccess) onSuccess(stream);
-      } catch (err) {
-        console.warn('Permission request failed:', err);
-        this.guideEl.classList.remove('hidden');
-        this.allowBtn.textContent = 'Try Again';
-      }
-    };
-  },
-
-  /* ------------------------------------------------------------------------
-     Laptop / Mobile Camera Capture View
+     Direct Camera Viewfinder (Laptop / Mobile Camera Capture)
      ------------------------------------------------------------------------ */
   async openCamera() {
     this.cameraModal.classList.remove('hidden');
@@ -167,16 +76,18 @@ const MediaHelper = {
     this.captureControls.classList.remove('hidden');
     this.previewControls.classList.add('hidden');
 
-    const stream = await this.requestMedia({
-      audio: false,
-      video: {
-        facingMode: this.currentFacingMode,
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      },
-      title: 'Camera Access Needed',
-      description: 'Allow ChatApp to access your camera to take and send photos.'
-    });
+    let stream = null;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: this.currentFacingMode }
+      });
+    } catch (e1) {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      } catch (e2) {
+        console.error('Camera open failed:', e2);
+      }
+    }
 
     if (!stream) {
       this.cameraModal.classList.add('hidden');
@@ -192,7 +103,7 @@ const MediaHelper = {
       this.snapshotVideo.play().catch(e => console.warn(e));
     };
 
-    // Check if device has multiple video cameras (e.g. mobile front/back)
+    // Check if device has multiple cameras (e.g. mobile front/back)
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(d => d.kind === 'videoinput');
@@ -207,8 +118,10 @@ const MediaHelper = {
 
     // Flash visual effect
     const wrap = document.querySelector('.camera-viewport-wrap');
-    wrap.classList.add('flash-effect');
-    setTimeout(() => wrap.classList.remove('flash-effect'), 300);
+    if (wrap) {
+      wrap.classList.add('flash-effect');
+      setTimeout(() => wrap.classList.remove('flash-effect'), 300);
+    }
 
     const video = this.snapshotVideo;
     const canvas = this.snapshotCanvas;
@@ -272,12 +185,9 @@ const MediaHelper = {
             type: 'image',
             content: data.url
           });
-        } else {
-          alert('Failed to send camera photo.');
         }
       } catch (err) {
         console.error('Camera upload error:', err);
-        alert('Could not upload camera photo.');
       }
     }
   },
@@ -303,4 +213,3 @@ const MediaHelper = {
 };
 
 window.MediaHelper = MediaHelper;
-

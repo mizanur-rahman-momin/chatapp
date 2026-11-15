@@ -257,33 +257,54 @@ class WebRTCManager {
   }
 
   async getMediaStream() {
+    if (this.localStream) {
+      this.localStream.getTracks().forEach(t => t.stop());
+      this.localStream = null;
+    }
+
+    const videoConstraints = {
+      facingMode: this.facingMode
+    };
+
+    let stream = null;
+
+    // 1. Try both camera and microphone
     try {
-      if (this.localStream) {
-        this.localStream.getTracks().forEach(t => t.stop());
-      }
-
-      const stream = await MediaHelper.requestMedia({
+      stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
-        video: {
-          facingMode: this.facingMode,
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        title: 'Camera & Microphone Needed',
-        description: 'ChatApp needs access to your camera and microphone to start this video call with your partner.'
+        video: videoConstraints
       });
-
-      if (!stream) {
-        return false;
-      }
-
-      this.localStream = stream;
-      this.localVideo.srcObject = this.localStream;
-      return true;
     } catch (err) {
-      console.error('Error accessing camera/mic:', err);
+      console.warn('Audio+video access failed, attempting video-only fallback:', err);
+      // 2. Fallback: try video only if microphone is missing/denied
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: videoConstraints
+        });
+      } catch (err2) {
+        console.warn('FacingMode video failed, attempting basic camera access:', err2);
+        // 3. Fallback: basic camera without resolution/facing constraints
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: true
+          });
+        } catch (err3) {
+          console.error('All camera access attempts failed:', err3);
+        }
+      }
+    }
+
+    if (!stream) {
+      this.callStatus.textContent = 'Camera unavailable';
+      setTimeout(() => this.cleanupCall(), 2000);
       return false;
     }
+
+    this.localStream = stream;
+    this.localVideo.srcObject = this.localStream;
+    return true;
   }
 
   async setupPeerConnection() {

@@ -257,42 +257,6 @@
     </div>
   </div>
 
-  <!-- Permission Access Popup / Modal -->
-  <div id="permission-modal" class="permission-modal hidden">
-    <div class="permission-card">
-      <div class="permission-icon-wrap" id="permission-icon-wrap">
-        <svg viewBox="0 0 24 24" width="38" height="38" fill="#00a884">
-          <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
-        </svg>
-      </div>
-      <h3 id="permission-title">Camera & Microphone Access</h3>
-      <p id="permission-description">
-        ChatApp needs access to your camera and microphone so you can make video calls and capture photos directly from your device.
-      </p>
-
-      <!-- Step by step guidance if blocked -->
-      <div id="permission-guide" class="permission-guide hidden">
-        <div class="guide-header">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="#ea4335">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-          </svg>
-          <span>Permission was blocked in your browser</span>
-        </div>
-        <ol>
-          <li>Look at the top address bar in your browser.</li>
-          <li>Click the <strong>camera / lock / tune icon</strong> (🔒 or 🎥).</li>
-          <li>Change <strong>Camera</strong> and <strong>Microphone</strong> from <em>Block</em> to <em>Allow</em>.</li>
-          <li>Click <strong>Try Again</strong> below or refresh the page.</li>
-        </ol>
-      </div>
-
-      <div class="permission-actions">
-        <button id="permission-cancel-btn" class="btn btn-secondary">Cancel</button>
-        <button id="permission-allow-btn" class="btn btn-primary">Continue</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Clear Chat from Screen Confirmation Modal -->
   <div id="clear-chat-modal" class="confirm-modal hidden">
     <div class="confirm-card">
